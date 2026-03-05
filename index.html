@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>exercise-form-checker</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23b8ff57'/><text x='50' y='67' font-size='52' font-family='monospace' font-weight='bold' text-anchor='middle' fill='%230a0f05'>E</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:        #080c04;
+      --surface:   #0e1409;
+      --surface2:  #131a0c;
+      --border:    rgba(184, 255, 87, 0.08);
+      --border2:   rgba(184, 255, 87, 0.15);
+      --lime:      #b8ff57;
+      --lime-dim:  rgba(184, 255, 87, 0.1);
+      --lime-glow: rgba(184, 255, 87, 0.2);
+      --red:       #ff5757;
+      --text:      #c8d4b8;
+      --muted:     #4a5a3a;
+      --white:     #edf5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 100; opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 56px;
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(8,12,4,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem; color: var(--lime); font-weight: 500;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo::before { content: '▶'; font-size: 0.6rem; opacity: 0.6; }
+
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { text-decoration: none; font-size: 0.8rem; color: var(--muted); transition: color 0.2s; font-weight: 500; }
+    .nav-links a:hover { color: var(--lime); }
+
+    /* HERO */
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 3rem;
+      padding: 5rem 6% 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(184,255,87,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,255,87,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse at 60% 50%, black 30%, transparent 75%);
+    }
+
+    .hero-left { position: relative; z-index: 1; }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--lime); margin-bottom: 1.5rem;
+      border: 1px solid var(--border2);
+      background: var(--lime-dim);
+      padding: 5px 12px; border-radius: 4px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lime);
+      animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 8vw, 7.5rem);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+
+    h1 .accent { color: var(--lime); }
+    h1 .line2 {
+      display: block;
+      -webkit-text-stroke: 1.5px var(--lime);
+      color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1rem; color: var(--text);
+      max-width: 440px; line-height: 1.75;
+      margin-bottom: 2.25rem;
+    }
+
+    .hero-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 10px 22px; border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem; font-weight: 600;
+      text-decoration: none; transition: all 0.2s;
+      border: none; cursor: pointer;
+    }
+
+    .btn-lime { background: var(--lime); color: #080c04; }
+    .btn-lime:hover { background: #ceff80; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(184,255,87,0.25); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+    .btn-outline:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* TERMINAL */
+    .hero-right { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,255,87,0.05);
+    }
+
+    .terminal-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-title { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-left: 0.5rem; }
+
+    .terminal-body { padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.9; }
+
+    .t-cmd  { color: var(--lime); }
+    .t-out  { color: var(--text); }
+    .t-good { color: #b8ff57; font-weight: 600; }
+    .t-bad  { color: var(--red); font-weight: 600; }
+    .t-info { color: #60a5fa; }
+    .t-dim  { color: var(--muted); }
+    .t-cursor { display: inline-block; width: 8px; height: 1em; background: var(--lime); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
+
+    .status-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .status-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.25rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .status-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .status-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+    .status-val { font-size: 0.88rem; font-weight: 600; color: var(--white); }
+
+    /* INSTALL */
+    .install-section { padding: 0 6%; margin-bottom: 1rem; }
+
+    .install-box {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 0.875rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; max-width: 560px;
+    }
+
+    .install-cmd { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; color: var(--lime); }
+    .install-cmd span { color: var(--muted); margin-right: 0.5rem; }
+
+    .copy-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px; border-radius: 4px;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .copy-btn:hover { border-color: var(--lime); color: var(--lime); }
+    .copy-btn.copied { color: var(--lime); border-color: var(--lime); }
+
+    /* SECTIONS */
+    .section { padding: 5rem 6%; }
+
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--lime); margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 2px; color: var(--white);
+      margin-bottom: 2.5rem;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+
+    .step { background: var(--bg); padding: 2rem 1.5rem; position: relative; transition: background 0.2s; }
+    .step:hover { background: var(--surface); }
+
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; line-height: 1;
+      color: var(--lime); opacity: 0.12;
+      position: absolute; top: 1rem; right: 1.25rem;
+    }
+
+    .step-icon { font-size: 1.75rem; margin-bottom: 1rem; }
+    .step-title { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; }
+
+    /* SUPPORTED EXERCISES */
+    .ex-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 560px;
+    }
+
+    .ex-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .ex-card:hover { border-color: var(--lime); background: var(--lime-dim); }
+    .ex-card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .ex-card-name { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+    .ex-card-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+    /* SETUP */
+    .setup-steps { display: flex; flex-direction: column; gap: 0.75rem; max-width: 620px; }
+
+    .setup-step {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+
+    .setup-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; color: var(--lime);
+      line-height: 1; flex-shrink: 0; width: 24px;
+    }
+
+    .setup-content {}
+    .setup-title { font-size: 0.85rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+
+    .setup-cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--lime);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      padding: 6px 10px; border-radius: 5px;
+      margin-top: 0.5rem; display: block;
+      white-space: pre-wrap; word-break: break-all;
+    }
+
+    .setup-note { font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 6%;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem;
+    }
+
+    .footer-text { font-size: 0.78rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1rem; }
+    .footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--lime); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-tag   { animation: fadeUp 0.4s ease 0.05s both; }
+    h1          { animation: fadeUp 0.4s ease 0.12s both; }
+    .hero-desc  { animation: fadeUp 0.4s ease 0.19s both; }
+    .hero-btns  { animation: fadeUp 0.4s ease 0.25s both; }
+    .hero-right { animation: fadeUp 0.5s ease 0.2s both; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 3rem; }
+      .ex-cards { grid-template-columns: 1fr 1fr; max-width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      .hero { padding: 3rem 5% 2.5rem; }
+      .section { padding: 3.5rem 5%; }
+      .install-section { padding: 0 5%; }
+      footer { flex-direction: column; align-items: flex-start; }
+      h1 { font-size: 4rem; }
+      .ex-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-logo">exercise-form-checker</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#setup">Setup</a>
+      <a href="https://github.com/himanshu-tw/exercise-form-checker" target="_blank">GitHub</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">Python · OpenCV · MediaPipe</div>
+      <h1>
+        PERFECT<br>
+        <span class="accent">FORM,</span>
+        <span class="line2">EVERY REP.</span>
+      </h1>
+      <p class="hero-desc">
+        Real-time exercise form checker using your webcam. Counts reps and gives instant visual feedback on your form — powered by MediaPipe Pose Landmarker.
+      </p>
+      <div class="hero-btns">
+        <a href="https://github.com/himanshu-tw/exercise-form-checker" target="_blank" class="btn btn-lime">
+          View on GitHub →
+        </a>
+        <a href="#setup" class="btn btn-outline">Get started</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="t-dot" style="background:#ff5f57"></span>
+          <span class="t-dot" style="background:#febc2e"></span>
+          <span class="t-dot" style="background:#28c840"></span>
+          <span class="terminal-title">python main.py</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-cmd">$</span> <span class="t-out">python main.py</span></div>
+          <div><span class="t-dim">→ Loading pose_landmarker.task...</span></div>
+          <div><span class="t-dim">→ Opening webcam feed...</span></div>
+          <div><span class="t-info">✦ Pose landmarks detected</span></div>
+          <div>&nbsp;</div>
+          <div><span class="t-out">Squat  Rep 1  </span><span class="t-good">✓ GOOD</span></div>
+          <div><span class="t-out">Squat  Rep 2  </span><span class="t-good">✓ GOOD</span></div>
+          <div><span class="t-out">Squat  Rep 3  </span><span class="t-bad">✗ FIX FORM</span></div>
+          <div><span class="t-out">Squat  Rep 4  </span><span class="t-good">✓ GOOD</span></div>
+          <div>&nbsp;</div>
+          <div><span class="t-dim">Press q to quit</span></div>
+          <div><span class="t-cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="status-strip">
+        <div class="status-card">
+          <div class="status-icon">🦴</div>
+          <div>
+            <div class="status-label">Model</div>
+            <div class="status-val">MediaPipe</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-icon">⚡</div>
+          <div>
+            <div class="status-label">Analysis</div>
+            <div class="status-val">Real-time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL STRIP -->
+  <div class="install-section">
+    <div class="install-box">
+      <div class="install-cmd"><span>$</span>pip install -r requirements.txt</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyCmd()">Copy</button>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="section-eyebrow">// under the hood</div>
+    <h2>HOW IT WORKS</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">📷</div>
+        <div class="step-title">Webcam input</div>
+        <div class="step-desc">OpenCV reads your live webcam feed frame by frame.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">🦴</div>
+        <div class="step-title">Pose detection</div>
+        <div class="step-desc">MediaPipe Pose Landmarker tracks your body joints in real-time.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">📐</div>
+        <div class="step-title">Form analysis</div>
+        <div class="step-desc">Joint angles are calculated and checked against correct form thresholds.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Visual feedback</div>
+        <div class="step-desc">Rep count and form cues are overlaid directly on the live video.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPPORTED EXERCISES -->
+  <section class="section" style="padding-top: 0">
+    <div class="section-eyebrow">// currently supported</div>
+    <h2>EXERCISES</h2>
+    <div class="ex-cards">
+      <div class="ex-card">
+        <div class="ex-card-icon">🏋️</div>
+        <div class="ex-card-name">Squat</div>
+        <div class="ex-card-desc">Tracks depth, knee alignment, and back angle per rep.</div>
+      </div>
+      <div class="ex-card">
+        <div class="ex-card-icon">⭐</div>
+        <div class="ex-card-name">Jumping Jack</div>
+        <div class="ex-card-desc">Counts full reps and checks arm + leg sync.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="section" id="setup" style="padding-top: 0">
+    <div class="section-eyebrow">// quickstart</div>
+    <h2>SETUP</h2>
+    <div class="setup-steps">
+
+      <div class="setup-step">
+        <div class="setup-n">1</div>
+        <div class="setup-content">
+          <div class="setup-title">Clone the repo</div>
+          <code class="setup-cmd">git clone https://github.com/himanshu-tw/exercise-form-checker
+cd exercise-form-checker</code>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">2</div>
+        <div class="setup-content">
+          <div class="setup-title">Create a virtual environment</div>
+          <code class="setup-cmd">python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate</code>
+          <div class="setup-note">Requires Python 3.8+</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">3</div>
+        <div class="setup-content">
+          <div class="setup-title">Install dependencies</div>
+          <code class="setup-cmd">pip install -r requirements.txt
+pip install keyboard</code>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">4</div>
+        <div class="setup-content">
+          <div class="setup-title">Download the pose model</div>
+          <code class="setup-cmd">wget https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/pose_landmarker_lite.task -O pose_landmarker.task</code>
+          <div class="setup-note">Model file goes in the project root directory.</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">5</div>
+        <div class="setup-content">
+          <div class="setup-title">Run</div>
+          <code class="setup-cmd">python main.py</code>
+          <div class="setup-note">Press <strong style="color:var(--lime)">q</strong> to quit.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-text">
+      Built by
+      <a href="https://github.com/himanshu-tw" style="color:var(--lime);text-decoration:none">Himanshu Tiwari</a>
+      · MIT License
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/himanshu-tw/exercise-form-checker">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    function copyCmd() {
+      navigator.clipboard.writeText('pip install -r requirements.txt').then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
