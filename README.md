@@ -5,7 +5,7 @@ Static landing page for [exercise-form-checker](https://github.com/himanshu-tw/e
 Built with  plain HTML/CSS/JS - no framework, no build step.
 
 ## Screenshots
-![exercise form checker](./)
+![exercise form checker](./747shots_so.png)
 
 ## Local Preview
 Just open `index.html` in a browser. No server needed.
