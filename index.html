@@ -851,15 +851,14 @@ source venv/bin/activate  # Windows: venv\Scripts\activate</code>
                 <div class="setup-n">3</div>
                 <div class="setup-content">
                     <div class="setup-title">Install dependencies</div>
-                    <code class="setup-cmd">pip install -r requirements.txt
-pip install keyboard</code>
+                    <code class="setup-cmd">pip install -r requirements.txt</code>
                 </div>
             </div>
 
             <div class="setup-step">
                 <div class="setup-n">4</div>
                 <div class="setup-content">
-                    <div class="setup-title">Download the pose model</div>
+                    <div class="setup-title">Download the pose model (if not in the cloned repo)</div>
                     <code
                         class="setup-cmd">wget https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/pose_landmarker_lite.task -O pose_landmarker.task</code>
                     <div class="setup-note">Model file goes in the project root directory.</div>
